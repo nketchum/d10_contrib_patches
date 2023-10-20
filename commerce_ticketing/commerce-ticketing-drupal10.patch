@@ -12,13 +12,15 @@ index 6a316ed..194420c 100644
    - commerce:commerce_cart
    - commerce:commerce_order
 diff --git a/composer.json b/composer.json
-index a4a8658..4b2e800 100644
+index a4a8658..ba9edc0 100644
 --- a/composer.json
 +++ b/composer.json
-@@ -6,6 +6,7 @@
+@@ -4,8 +4,7 @@
+     "description": "Commerce Ticketing is a ticketing addon for Drupal Commerce.",
+     "license": "GPL-2.0+",
      "require": {
-         "php": ">=7.4.0",
-         "drupal/core": "^9",
+-        "php": ">=7.4.0",
+-        "drupal/core": "^9",
 +        "drupal/color": "^1.0",
          "drupal/commerce": "^2",
          "drupal/entity_print": "^2",
@@ -59,6 +61,19 @@ index 1fbae3e..b6d6ffa 100644
      $build['summary']['#markup'] = $this->t('Total commerce tickets: @total', ['@total' => $query->count()->execute()]);
      return $build;
    }
+diff --git a/src/Event/TicketEvent.php b/src/Event/TicketEvent.php
+index e5d1078..df64b41 100644
+--- a/src/Event/TicketEvent.php
++++ b/src/Event/TicketEvent.php
+@@ -3,7 +3,7 @@
+ namespace Drupal\commerce_ticketing\Event;
+ 
+ use Drupal\commerce_ticketing\CommerceTicketInterface;
+-use Symfony\Component\EventDispatcher\Event;
++use Symfony\Contracts\EventDispatcher\Event;
+ 
+ /**
+  * Defines the ticket event.
 diff --git a/src/Form/CommerceTicketForm.php b/src/Form/CommerceTicketForm.php
 index f4b2743..4fe963e 100644
 --- a/src/Form/CommerceTicketForm.php
