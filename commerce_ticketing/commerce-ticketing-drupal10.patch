@@ -1,29 +1,78 @@
 diff --git a/commerce_ticketing.info.yml b/commerce_ticketing.info.yml
-index 327cd39..33523f5 100644
+index 6a316ed..194420c 100644
 --- a/commerce_ticketing.info.yml
 +++ b/commerce_ticketing.info.yml
-@@ -3,7 +3,7 @@ type: module
+@@ -2,7 +2,7 @@ name: Commerce Ticketing
+ type: module
  description: 'Provides a commerce ticket entity.'
- package: Liip
- core: 8.x
--core_version_requirement: ^8 || ^9
-+core_version_requirement: ^8 || ^9 || ^10
+ package: 'Commerce (contrib)'
+-core_version_requirement: ^9
++core_version_requirement: ^9 || ^10
  dependencies:
+   - commerce:commerce_cart
    - commerce:commerce_order
-   - commerce:commerce_number_pattern
 diff --git a/composer.json b/composer.json
-index c57b4a3..1f7ec6d 100644
+index a4a8658..4b2e800 100644
 --- a/composer.json
 +++ b/composer.json
-@@ -4,8 +4,9 @@
-     "description": "Commerce Ticketing is a ticketing addon for Drupal Commerce.",
-     "license": "GPL-2.0+",
+@@ -6,6 +6,7 @@
      "require": {
--        "php": ">=7.2.0",
--        "drupal/core": "^8.7.7 || ^9",
-+        "php": ">=7.4.0 || ^8.0",
-+        "drupal/core": "^9.4 || ^10",
+         "php": ">=7.4.0",
+         "drupal/core": "^9",
 +        "drupal/color": "^1.0",
-         "tecnickcom/tcpdf": "6.3.2"
-     },
-     "minimum-stability": "dev"
+         "drupal/commerce": "^2",
+         "drupal/entity_print": "^2",
+         "endroid/qr-code": "^4.3"
+diff --git a/src/CommerceTicketCreateTickets.php b/src/CommerceTicketCreateTickets.php
+index 19cfdb5..e84ae12 100644
+--- a/src/CommerceTicketCreateTickets.php
++++ b/src/CommerceTicketCreateTickets.php
+@@ -81,6 +81,7 @@ trait CommerceTicketCreateTickets {
+     $ticket_ids = $storage->getQuery()
+       ->condition('order_id', $order->id())
+       ->sort('id')
++      >accessCheck(TRUE)
+       ->execute();
+ 
+     $order->set('tickets', $ticket_ids);
+diff --git a/src/CommerceTicketListBuilder.php b/src/CommerceTicketListBuilder.php
+index 1fbae3e..b6d6ffa 100644
+--- a/src/CommerceTicketListBuilder.php
++++ b/src/CommerceTicketListBuilder.php
+@@ -92,7 +92,9 @@ class CommerceTicketListBuilder extends EntityListBuilder {
+     if ($this->limit) {
+       $query->pager($this->limit);
+     }
+-    return $query->execute();
++    return $query
++      ->accessCheck(TRUE)
++      ->execute();
+   }
+ 
+   /**
+@@ -107,6 +109,8 @@ class CommerceTicketListBuilder extends EntityListBuilder {
+       $query->condition('order_id', $order_id);
+     }
+ 
++    $query->accessCheck(TRUE);
++
+     $build['summary']['#markup'] = $this->t('Total commerce tickets: @total', ['@total' => $query->count()->execute()]);
+     return $build;
+   }
+diff --git a/src/Form/CommerceTicketForm.php b/src/Form/CommerceTicketForm.php
+index f4b2743..4fe963e 100644
+--- a/src/Form/CommerceTicketForm.php
++++ b/src/Form/CommerceTicketForm.php
+@@ -70,10 +70,10 @@ class CommerceTicketForm extends ContentEntityForm {
+     }
+ 
+     $result = $entity->save();
+-    $link = $entity->toLink($this->t('View'))->toRenderable();
++    $link = $entity->toLink($this->t('View'))->toString();
+ 
+     $message_arguments = ['%label' => $this->entity->label()];
+-    $logger_arguments = $message_arguments + ['link' => render($link)];
++    $logger_arguments = $message_arguments + ['link' => $link];
+ 
+     if ($result == SAVED_NEW) {
+       $this->messenger()
