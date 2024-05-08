@@ -1,0 +1,41 @@
+diff --git a/src/PluginForm/CyberSourceSahcForm.php b/src/PluginForm/CyberSourceSahcForm.php
+index 6ef4e7a..698e815 100644
+--- a/src/PluginForm/CyberSourceSahcForm.php
++++ b/src/PluginForm/CyberSourceSahcForm.php
+@@ -161,13 +161,34 @@ class CyberSourceSahcForm extends BasePaymentOffsiteForm implements ContainerInj
+       $data['unsigned_field_names'] = 'form_build_id,form_id,form_token';
+     }
+ 
++    /*
++    Patch applied by MBGNA.
++
++    This patch removes the optional customer_ip_address field. Pantheon
++    automatically sends ipv6 addresses when available, and CyberSource interstital
++    oddly does not accept that. As this is an optional field, we must remove it
++    here; there's no user interface option for this. So, comment it out.
++
++    References:
++    https://www.drupal.org/project/commerce_cybersource_sasop/issues/2825016
++    https://www.drupal.org/project/commerce_authnet/issues/2808355
++    https://www.drupal.org/node/2807291
++    https://community.developer.cybersource.com/t5/Ideas/2016-and-authnet-still-hasn-t-heard-of-IPv6/idi-p/54953
++    */
++
+     /*
+     Optional.
+     The substring is required because the CyberSource API only accepts 15
+     characters for IP address; IPv6 addresses are 45 characters in length.
+     */
+-    $data['customer_ip_address'] = substr($this->requestStack->getCurrentRequest()
+-      ->getClientIp(), 0, 15);
++    // $data['customer_ip_address'] = substr($this->requestStack->getCurrentRequest()
++    //   ->getClientIp(), 0, 15);
++    //
++
++    /*
++    End MBGNA patch.
++    */
++
+     // Optional.
+     $data['payment_method'] = 'card';
+     // Optional. Overrides the custom receipt profile setting in the SA profile.
